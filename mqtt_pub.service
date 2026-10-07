@@ -1,0 +1,14 @@
+[Unit]
+Description=MQTT Publisher
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/default/mqtt_pub
+ExecStart=/usr/local/bin/mqtt_pub $PARAMS
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

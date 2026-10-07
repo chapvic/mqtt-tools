@@ -1,0 +1,8 @@
+*.o
+*.ini
+*.old
+*.tmp
+*.bak
+*.log
+mqtt_pub
+mqtt_sub

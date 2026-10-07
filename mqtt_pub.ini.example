@@ -1,0 +1,84 @@
+# ============================================================
+# MQTT Publisher v1.1 — Example Configuration
+# (c) 2026, Chapvic — License: GPLv3
+# ============================================================
+#
+# Place this file as mqtt_pub.ini or specify with -f:
+#   ./mqtt_pub -f /path/to/mqtt_pub.ini
+#
+# See docs/MQTT_Publisher.md (EN) or docs/MQTT_Publisher_RU.md (RU)
+# for full documentation.
+# ============================================================
+
+# ---- Local broker connection (optional, defaults shown) ----
+[MQTT]
+host = localhost
+port = 1883
+user = mqtt_user
+password = mqtt_secret
+debug = 1
+
+# ---- Local metric: file source with literal key ----
+# Reads raw data from file, finds "T" and takes everything after it.
+# Example file content: "T=23.5\n"  ->  published value: "23.5"
+[temperature]
+topic = home/temperature
+interval = 5
+qos = 0
+source = /proc/sensors/dht/gpio23/value
+key = T
+
+# ---- Local metric: file source with regex key ----
+# Extracts the first capture group from the regex.
+# Example file content: "H=45%\n"  ->  published value: "45"
+[humidity]
+topic = home/humidity
+interval = 5
+qos = 0
+source = /proc/sensors/dht/gpio23/value
+key = /^H=(.+)$/
+
+# ---- Local metric: shell command, no key (entire output) ----
+# Uptime formatted as HH:MM
+[uptime]
+topic = home/system/uptime
+interval = 10
+qos = 0
+source = @awk '{print int($1/3600) ":" sprintf("%02d", (int($1/60)%60))}' /proc/uptime
+key = -
+
+# ---- Local metric: shell command with default key (-) ----
+# key=- means entire payload; can also be omitted (same effect)
+[load_avg]
+topic = home/system/loadavg
+interval = 15
+qos = 1
+source = @cat /proc/loadavg | awk '{print $1}'
+
+# ---- Remote metric: event-driven (no interval) ----
+# Subscribes to remote broker topic and republishes immediately on arrival.
+# No interval = publish on every received message.
+# key=- = publish entire payload as-is.
+[cellar_temperature]
+topic = home/cellar/temperature
+qos = 0
+source = $admin:secret@remote_host:1883/home/cellar/temperature
+key = -
+
+# ---- Remote metric: timer-based (with interval) ----
+# Stores last received value and republishes every 5 seconds.
+# Same remote broker as cellar_temperature -> shares the connection.
+[cellar_humidity]
+topic = home/cellar/humidity
+interval = 5
+qos = 0
+source = $admin:secret@remote_host:1883/home/cellar/humidity
+key = /^H=(.+)$/
+
+# ---- Remote metric: no auth, event-driven ----
+# Remote broker without authentication.
+[garage_door]
+topic = home/garage/door
+qos = 0
+source = $garage-host:1883/garage/door/status
+key = -

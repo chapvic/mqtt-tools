@@ -1,0 +1,37 @@
+MQTT Tools
+Copyright (c) 2026, Chapvic
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/gpl-3.0.txt>.
+
+------------------------------------------------------------------------------
+
+Third-Party Library: Eclipse Mosquitto (libmosquitto)
+
+This project dynamically links against the Eclipse Mosquitto client library
+(libmosquitto), which is distributed under a dual license:
+
+  - Eclipse Public License 1.0 (EPL)
+  - Eclipse Distribution License 1.0 (EDL)
+
+This project uses Mosquitto under the Eclipse Distribution License 1.0 (EDL),
+which is a BSD-style permissive license compatible with GPLv3.
+
+For the full text of the EDL, see:
+  https://www.eclipse.org/org/documents/edl-v10.php
+
+For the full text of the GPLv3, see:
+  https://www.gnu.org/licenses/gpl-3.0.txt
+
+Mosquitto project:
+  https://github.com/eclipse-mosquitto/mosquitto

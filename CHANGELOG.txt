@@ -1,0 +1,72 @@
+CHANGELOG
+=========
+
+mqtt_pub - A multi-threaded MQTT publisher for Linux embedded systems
+======================================================================
+
+v1.0
+--------------------
+
+  Initial release with:
+
+  - INI config parser ([MQTT] + per-metric sections).
+  - Three source types:
+    - File source: read value from a regular file via open()+read().
+    - Shell source (@): execute shell command via popen(), read stdout.
+    - Remote source ($): subscribe to a remote MQTT broker topic and
+      republish received values to the local broker.
+  - key= config directive for value extraction:
+    - Literal key: search source content for key=<value>, publish <value>.
+    - Regex key (/pattern/): POSIX ERE with capture group support.
+    - key=-: publish full payload (default when key is not set).
+  - Remote source format: $[user:pass@]host:port/topic
+    - Optional authentication (user:pass@).
+    - Host validation (alphanumeric, dots, hyphens).
+    - Port validation (1-65535, defaults to 1883).
+  - Hybrid remote mode:
+    - Event-driven (no interval): publish on each received message.
+    - Timer republish (with interval): republish last known value
+      periodically, update on new messages.
+  - Shared remote connections: deduplicate by host:port (MAX_REMOTES=32).
+  - Per-metric pthread with configurable interval and QoS.
+  - mosquitto_publish with global mutex (g_mqtt_mutex) for thread safety.
+  - Per-metric value_mutex for remote metrics (shared between
+    remote_on_message callback and timer threads).
+  - Auto-reconnect for local and remote brokers:
+    - mosquitto_reconnect_delay_set(1, 60, false) — 1s initial,
+      60s max, linear backoff.
+    - Remote brokers use mosquitto_connect_async (non-blocking).
+    - Re-subscribe to all topics on reconnect (remote_on_connect callback).
+  - Fault tolerance: unreachable remote brokers do not block local metrics.
+  - Connection retry with single-error logging for local broker.
+  - CONNACK wait with 100ms polling (up to 2 seconds).
+  - on_connect / on_disconnect callbacks (local and remote).
+  - SIGINT/SIGTERM handling with graceful shutdown:
+    - g_running flag checked in 100ms intervals.
+    - Ordered teardown: join threads, loop_stop(force=true) for all
+      brokers, disconnect, destroy, lib_cleanup.
+  - Username/password authentication for local and remote brokers.
+  - Config validation: duplicate sections, duplicate topics, missing
+    fields, invalid ports, QoS range, buffer limits, max metrics.
+  - Debug mode (debug=1): verbose logging of published values,
+    connection events, source errors, remote subscriptions.
+  - Buffer limits: MAX_VALUE(256), MAX_SHELL_CMD(2048), MAX_SECTION(64),
+    MAX_TOPIC(512), MAX_LINE(4096), MAX_METRICS(128), MAX_HOST(256),
+    MAX_USER(64), MAX_PASS(256), MAX_KEY(64), MAX_RAW(8192),
+    MAX_REMOTE_TOPIC(512), MAX_REMOTES(32).
+  - Makefile with targets:
+    - make: build mqtt_pub.
+    - make install: install binary, systemd unit, config, env file.
+      - Local mqtt_pub.ini in project dir is copied to destination
+        (preserving user-configured metrics), with HOST/PORT/MQTT_USER/
+        MQTT_PASS overrides applied via sed.
+      - If no local config, generate dynamically or update existing.
+      - Env file at /etc/default/mqtt_pub with PARAMS=-f <config_path>.
+      - install.log saves CONF path for future updates.
+    - make uninstall: remove all installed files (preserves install.log).
+    - make clean: remove compiled binary.
+    - make distclean: remove binary and install.log.
+  - systemd service file (mqtt_pub.service).
+  - Example config file (mqtt_pub.ini.example).
+  - Documentation: README.md, README_RU.md, docs/MQTT_Publisher.md,
+    docs/MQTT_Publisher_RU.md.
